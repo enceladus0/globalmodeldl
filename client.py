@@ -9,6 +9,7 @@ def receive_global_model():
         data = s.recv(4096)
         global_model_params = pickle.loads(data)
         local_model.load_state_dict(global_model_params)
+        print('Received global model from server successfully!')
 
 # 定义本地模型
 class LocalModel(torch.nn.Module):
@@ -27,4 +28,5 @@ local_model = LocalModel()
 
 # 从服务器接收全局模型并应用到本地模型
 receive_global_model()
+
 
