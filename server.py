@@ -1,6 +1,6 @@
 import socket
-import torch
 import pickle
+import torch
 
 # 定义全局模型
 class GlobalModel(torch.nn.Module):
@@ -17,18 +17,26 @@ class GlobalModel(torch.nn.Module):
 
 global_model = GlobalModel()
 
-# 初始化全局模型参数
-for param in global_model.parameters():
-    param.data.uniform_(-1, 1)
+# 定义服务器端口和IP地址
+SERVER_HOST = '192.168.117.93'
+SERVER_PORT = 8000
 
-# 将全局模型发送给客户端
-def send_global_model():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(('192.168.117.93', 8000))
-        s.listen()
+# 开始监听客户端连接
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.bind((SERVER_HOST, SERVER_PORT))
+    s.listen(1)
+    print(f'Server listening on {SERVER_HOST}:{SERVER_PORT}...')
+
+    while True:
+        # 等待客户端连接
         conn, addr = s.accept()
-        with conn:
-            print('Connected by', addr)
-            data = pickle.dumps(global_model.state_dict())
-            conn.sendall(data)
+        print(f'Connected by {addr}')
+
+        # 将全局模型发送给客户端
+        data = pickle.dumps(global_model.state_dict())
+        conn.sendall(data)
+
+        # 关闭连接
+        conn.close()
+
 
