@@ -18,7 +18,7 @@ class GlobalModel(torch.nn.Module):
 global_model = GlobalModel()
 
 # 定义服务器端口和IP地址
-SERVER_HOST = '192.168.117.93'
+SERVER_HOST = '192.168.238.93'
 SERVER_PORT = 8000
 
 # 开始监听客户端连接
