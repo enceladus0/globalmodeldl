@@ -18,7 +18,7 @@ class GlobalModel(torch.nn.Module):
 
 # 定义服务器端口和IP地址
 SERVER_HOST = '192.168.238.93'
-SERVER_PORT = 1234
+SERVER_PORT = 8003
 
 # 尝试连接服务器
 connected = False
@@ -28,21 +28,29 @@ while not connected:
             s.connect((SERVER_HOST, SERVER_PORT))
             print(f'Connected to {SERVER_HOST}:{SERVER_PORT}...')
             connected = True
+
             # 接收来自服务器的全局模型
-            data = s.recv(10240)
-            state_dict = pickle.loads(data)
+            buffer = b''
+            while True:
+                data = s.recv(1024)
+                if not data:
+                    break
+                buffer += data
+            state_dict = pickle.loads(buffer)
             global_model = GlobalModel()
             global_model.load_state_dict(state_dict)
             print("Received global model from server.")
+
             # 关闭连接
             s.shutdown(socket.SHUT_RDWR)
             s.close()
     except ConnectionRefusedError:
         print("Server not available, waiting...")
-        time.sleep(10)
+        time.sleep(5)
 
 # 进行模型推理或训练等操作
 # ...
+
 
 
 
