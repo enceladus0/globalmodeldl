@@ -1,49 +1,49 @@
 import socket
 import pickle
 import torch
+import time
 
-# 定义服务器地址和端口号
-SERVER_IP = '192.168.117.93'
-SERVER_PORT = 8000
-
-# 定义模型
-class Net(torch.nn.Module):
+# 定义全局模型
+class GlobalModel(torch.nn.Module):
     def __init__(self):
-        super(Net, self).__init__()
+        super(GlobalModel, self).__init__()
         self.fc1 = torch.nn.Linear(10, 5)
         self.fc2 = torch.nn.Linear(5, 1)
-        self.relu = torch.nn.ReLU()
-        self.softmax = torch.nn.Softmax(dim=1)
-        
+
     def forward(self, x):
         x = self.fc1(x)
-        x = self.relu(x)
+        x = torch.nn.functional.relu(x)
         x = self.fc2(x)
-        x = self.softmax(x)
         return x
 
-# 定义客户端接收数据的缓冲区大小
-BUFFER_SIZE = 4096
+# 定义服务器端口和IP地址
+SERVER_HOST = '192.168.238.93'
+SERVER_PORT = 12345
 
-# 创建客户端套接字并连接到服务器
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_socket.connect((SERVER_IP, SERVER_PORT))
+# 尝试连接服务器
+connected = False
+while not connected:
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((SERVER_HOST, SERVER_PORT))
+            print(f'Connected to {SERVER_HOST}:{SERVER_PORT}...')
+            connected = True
+            # 接收来自服务器的全局模型
+            data = s.recv(4096)
+            state_dict = pickle.loads(data)
+            global_model = GlobalModel()
+            global_model.load_state_dict(state_dict)
+            print("Received global model from server.")
+            # 关闭连接
+            s.shutdown(socket.SHUT_RDWR)
+            s.close()
+    except ConnectionRefusedError:
+        print("Server not available, waiting...")
+        time.sleep(10)
 
-# 接收服务器发送的数据
-data = b''
-while True:
-    packet = client_socket.recv(BUFFER_SIZE)
-    if not packet:
-        break
-    data += packet
+# 进行模型推理或训练等操作
+# ...
 
-# 反序列化数据并更新本地模型
-model_dict = pickle.loads(data)
-model = Net()
-model.load_state_dict(model_dict)
-
-# 显示提示信息
-print("Client: Received global model from server successfully.")
 
 
 
