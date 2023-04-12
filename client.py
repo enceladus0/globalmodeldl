@@ -18,7 +18,7 @@ class GlobalModel(torch.nn.Module):
 
 # 定义服务器端口和IP地址
 SERVER_HOST = '192.168.238.93'
-SERVER_PORT = 8003
+SERVER_PORT = 8008
 
 # 尝试连接服务器
 connected = False
